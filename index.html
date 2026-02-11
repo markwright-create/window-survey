@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>Window Survey</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#0a0a1a;color:#e0e0e0;min-height:100vh}
+button{font-family:inherit;cursor:pointer;border:none;-webkit-appearance:none}
+select,input,textarea{font-family:inherit;font-size:16px;-webkit-appearance:none}
+.hide{display:none!important}
+.hdr{padding:16px;border-bottom:1px solid #222;background:#0f0f20}
+.hdr h1{font-size:18px;font-weight:700}
+.hdr p{font-size:12px;color:#888;margin-top:4px}
+.hdr-row{display:flex;justify-content:space-between;align-items:center}
+.stats{display:flex;gap:6px;padding:12px;overflow-x:auto}
+.sbox{flex:1;min-width:70px;background:#151528;border:1px solid #252540;border-radius:8px;padding:10px 6px;text-align:center}
+.sbox .num{font-size:22px;font-weight:700;font-family:monospace}
+.sbox .lbl{font-size:9px;color:#888;text-transform:uppercase;margin-top:2px}
+.pbar{margin:0 12px 12px;height:5px;background:#1a1a30;border-radius:3px;overflow:hidden}
+.pfill{height:100%;background:#22c55e;border-radius:3px;transition:width .3s}
+.flist{padding:8px 12px 30px}
+.fbtn{display:flex;align-items:center;gap:10px;width:100%;padding:12px;background:#111125;border:1px solid #222240;border-radius:6px;margin-bottom:6px;text-align:left;color:#e0e0e0}
+.fbtn:active{background:#1a1a35}
+.flbl{font-size:14px;font-weight:700;font-family:monospace;min-width:32px}
+.fbar{flex:1;height:5px;background:#1a1a30;border-radius:3px;overflow:hidden}
+.fbar-fill{height:100%;border-radius:3px}
+.fcnt{font-size:11px;color:#888;min-width:40px;text-align:right}
+.bgrid{padding:10px;display:grid;grid-template-columns:repeat(6,1fr);gap:5px}
+.bbtn{border-radius:6px;padding:12px 2px;display:flex;flex-direction:column;align-items:center;gap:1px;color:#e0e0e0;font-size:15px;font-weight:700;font-family:monospace;border:1px solid #333}
+.bbtn:active{opacity:.7}
+.bbtn small{font-size:7px;text-transform:uppercase;opacity:.7}
+.sticky{position:sticky;top:0;z-index:10;background:#0a0a1a;border-bottom:1px solid #222;padding:10px 14px}
+.sticky-row{display:flex;justify-content:space-between;align-items:center}
+.ref{font-size:18px;font-weight:700;font-family:monospace}
+.back{background:none;color:#999;font-size:13px;padding:0;margin-bottom:4px}
+.badge{font-size:10px;font-weight:700;padding:3px 8px;border-radius:4px;text-transform:uppercase}
+.nav-row{display:flex;gap:6px;margin-top:6px;flex-wrap:wrap}
+.nbtn{background:#1a1a30;border:1px solid #333;border-radius:4px;color:#aaa;padding:5px 10px;font-size:11px;font-weight:600}
+.sbody{padding:14px;max-width:700px}
+.sec{background:#111125;border:1px solid #222240;border-radius:8px;padding:14px;margin-bottom:10px}
+.sec h3{font-size:13px;font-weight:700;margin-bottom:12px}
+.fld{margin-bottom:12px}
+.fld label{display:block;font-size:12px;color:#999;margin-bottom:5px;font-weight:500}
+.ynrow{display:flex;gap:6px}
+.ybtn{flex:1;padding:8px 0;border-radius:4px;font-size:13px;font-weight:600;background:#151528;border:1px solid #333;color:#888;text-align:center}
+.ybtn.yes{background:#0a2a15;border-color:#22c55e;color:#22c55e}
+.ybtn.no{background:#2a0a0a;border-color:#ef4444;color:#ef4444}
+.inp{width:100%;background:#0e0e20;border:1px solid #333;border-radius:4px;color:#e0e0e0;padding:8px 10px;outline:none}
+.inp:focus{border-color:#3b82f6}
+textarea.inp{resize:vertical;min-height:70px}
+.warn{padding:8px;background:#2a1a00;border:1px solid #554400;border-radius:4px;font-size:12px;color:#eab308;margin-bottom:10px}
+.pbtn{width:100%;padding:14px;background:#151528;border:2px dashed #333;border-radius:8px;color:#999;font-size:13px;font-weight:600;margin-bottom:10px}
+.pgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+.pitem{position:relative;border-radius:6px;overflow:hidden;border:1px solid #333}
+.pitem img{width:100%;height:80px;object-fit:cover;display:block}
+.prem{position:absolute;top:3px;right:3px;background:#ef4444;border-radius:50%;width:22px;height:22px;color:#fff;font-size:12px;display:flex;align-items:center;justify-content:center}
+.ecard{background:#111125;border:2px solid #222240;border-radius:8px;padding:18px;margin-bottom:10px;text-align:left;width:100%;color:#e0e0e0}
+.ecard:active{border-color:#444}
+.ecard .icon{font-size:24px;margin-bottom:4px}
+.ecard .title{font-size:14px;font-weight:700}
+.ecard .desc{font-size:12px;color:#888}
+.dlbtn{background:#0a2a15;border:1px solid #22c55e44;border-radius:4px;color:#22c55e;padding:10px 18px;font-size:13px;font-weight:600;margin-top:12px;margin-right:8px}
+.cpbtn{background:#1a1a30;border:1px solid #333;border-radius:4px;color:#aaa;padding:10px 18px;font-size:13px;font-weight:600;margin-top:12px}
+pre.out{background:#0e0e20;border:1px solid #222;border-radius:6px;padding:10px;font-size:10px;color:#999;overflow:auto;max-height:250px;white-space:pre-wrap;word-break:break-all;margin-top:12px}
+.status-row{display:flex;align-items:center;gap:8px;margin-top:6px}
+.status-row label{font-size:11px;color:#888;white-space:nowrap}
+.status-row select{flex:1;background:#0e0e20;border:1px solid #333;border-radius:4px;color:#e0e0e0;padding:6px 8px;font-size:12px;font-weight:600}
+</style>
+</head>
+<body>
+
+<div id="page-dashboard">
+  <div class="hdr"><div class="hdr-row"><div><h1>🪟 Window Bay Survey</h1><p>21 floors × 36 bays = 756 windows</p></div><button class="nbtn" onclick="showExport()">Export</button></div></div>
+  <div class="stats" id="dash-stats"></div>
+  <div class="pbar"><div class="pfill" id="dash-pbar"></div></div>
+  <div class="flist" id="dash-floors"></div>
+</div>
+
+<div id="page-floor" class="hide">
+  <div class="sticky">
+    <button class="back" onclick="showDashboard()">← All Floors</button>
+    <div class="sticky-row"><h2 id="floor-title"></h2></div>
+    <div id="floor-stats" style="display:flex;gap:10px;margin-top:6px;font-size:11px"></div>
+    <div class="pbar" style="margin:8px 0 0"><div class="pfill" id="floor-pbar"></div></div>
+  </div>
+  <div class="bgrid" id="floor-grid"></div>
+</div>
+
+<div id="page-survey" class="hide">
+  <div class="sticky">
+    <div class="sticky-row"><button class="back" id="survey-back">← Back</button><span class="badge" id="survey-badge"></span></div>
+    <div class="sticky-row" style="margin-top:4px">
+      <span class="ref" id="survey-ref"></span>
+      <div style="display:flex;gap:4px"><button class="nbtn" id="btn-prev">◀ Prev</button><button class="nbtn" id="btn-next">Next ▶</button></div>
+    </div>
+    <div class="nav-row"><button class="nbtn" id="btn-copy">Copy Previous Bay</button></div>
+    <div class="status-row">
+      <label>Status:</label>
+      <select id="status-select" onchange="setStatus(this.value)">
+        <option value="not_started">Not Started</option>
+        <option value="in_progress">In Progress</option>
+        <option value="completed">Completed</option>
+        <option value="flagged">Flagged</option>
+      </select>
+    </div>
+  </div>
+  <div class="sbody" id="survey-body"></div>
+</div>
+
+<div id="page-export" class="hide">
+  <div style="padding:14px">
+    <button class="back" onclick="showDashboard()">← Back</button>
+    <h2 style="margin:10px 0 16px;font-size:18px">Export Survey Data</h2>
+    <button class="ecard" onclick="doCSV()"><div class="icon">📊</div><div class="title">Export CSV</div><div class="desc">Full data for costing spreadsheets</div></button>
+    <button class="ecard" onclick="doReport()"><div class="icon">📋</div><div class="title">Summary Report</div><div class="desc">Key findings and issues</div></button>
+    <div id="export-out"></div>
+  </div>
+</div>
+
+<script>
+var FLOORS=21, BAYS=36, TOTAL=756;
+var STAT={
+  not_started:{c:"#64748b",bg:"#1e293b",l:"Not Started",s:"—"},
+  in_progress:{c:"#eab308",bg:"#422006",l:"In Progress",s:"WIP"},
+  completed:{c:"#22c55e",bg:"#052e16",l:"Completed",s:"Done"},
+  flagged:{c:"#ef4444",bg:"#450a0a",l:"Flagged",s:"Flag"}
+};
+var curFloor=null, curBay=null, curData=null;
+
+function skey(f,b){return "ws_"+f+"_"+b}
+function load(f,b){try{var d=localStorage.getItem(skey(f,b));return d?JSON.parse(d):null}catch(e){return null}}
+function save(f,b,d){try{localStorage.setItem(skey(f,b),JSON.stringify(d))}catch(e){}var idx=getIdx();idx[f+"-"+b]=d.status;try{localStorage.setItem("ws_idx",JSON.stringify(idx))}catch(e){}}
+function getIdx(){try{var d=localStorage.getItem("ws_idx");return d?JSON.parse(d):{}}catch(e){return {}}}
+function getSt(f,b){var idx=getIdx();return idx[f+"-"+b]||"not_started"}
+function emptyData(){return{blinds:null,blindsType:"",blindsCondition:"",blindsRemoval:null,desk:null,deskType:"",deskClearance:null,furniture:null,furnitureNotes:"",insulated:null,insulationType:"",insulationCondition:"",windowType:"",glazing:"",openingMech:"",frameCondition:"",sealantCondition:"",cableRouting:null,cableNotes:"",radiator:null,radiatorType:"",accessDifficulty:"",heightRestriction:null,heightNotes:"",condensation:null,draught:null,internalDamage:"",photos:[],notes:"",status:"not_started",surveyedBy:"",surveyDate:""}}
+
+function hideAll(){
+  document.getElementById("page-dashboard").className="hide";
+  document.getElementById("page-floor").className="hide";
+  document.getElementById("page-survey").className="hide";
+  document.getElementById("page-export").className="hide";
+}
+function showDashboard(){hideAll();document.getElementById("page-dashboard").className="";renderDashboard()}
+function showFloor(f){curFloor=f;hideAll();document.getElementById("page-floor").className="";renderFloor()}
+function showSurvey(f,b){curFloor=f;curBay=b;curData=load(f,b)||emptyData();hideAll();document.getElementById("page-survey").className="";renderSurvey()}
+function showExport(){hideAll();document.getElementById("page-export").className="";document.getElementById("export-out").innerHTML=""}
+
+function renderDashboard(){
+  var idx=getIdx(),done=0,prog=0,flag=0;
+  for(var k in idx){if(idx[k]==="completed")done++;else if(idx[k]==="in_progress")prog++;else if(idx[k]==="flagged")flag++}
+  var pct=Math.round((done/TOTAL)*100);
+  document.getElementById("dash-stats").innerHTML='<div class="sbox"><div class="num" style="color:#e0e0e0">'+pct+'%</div><div class="lbl">Complete</div></div><div class="sbox"><div class="num" style="color:#22c55e">'+done+'</div><div class="lbl">Done</div></div><div class="sbox"><div class="num" style="color:#eab308">'+prog+'</div><div class="lbl">In Progress</div></div><div class="sbox"><div class="num" style="color:#ef4444">'+flag+'</div><div class="lbl">Flagged</div></div>';
+  document.getElementById("dash-pbar").style.width=pct+"%";
+  var h="";
+  for(var f=FLOORS;f>=1;f--){var fc=0,ff=0;for(var b=1;b<=BAYS;b++){var s=getSt(f,b);if(s==="completed")fc++;if(s==="flagged")ff++}var fp=Math.round((fc/BAYS)*100);
+    h+='<button class="fbtn" onclick="showFloor('+f+')"><span class="flbl">F'+f+'</span><div class="fbar"><div class="fbar-fill" style="width:'+fp+'%;background:'+(fp===100?"#22c55e":"#3b82f6")+'"></div></div><span class="fcnt">'+fc+'/'+BAYS+'</span>'+(ff>0?'<span style="font-size:10px;color:#ef4444;font-weight:700">⚑'+ff+'</span>':'')+'</button>'}
+  document.getElementById("dash-floors").innerHTML=h;
+}
+
+function renderFloor(){
+  var f=curFloor;
+  document.getElementById("floor-title").textContent="Floor "+f;
+  var stats={not_started:0,in_progress:0,completed:0,flagged:0};
+  for(var b=1;b<=BAYS;b++){var s=getSt(f,b);stats[s]=(stats[s]||0)+1}
+  document.getElementById("floor-pbar").style.width=Math.round((stats.completed/BAYS)*100)+"%";
+  var sh="";for(var k in STAT)sh+='<span style="color:'+STAT[k].c+'">'+stats[k]+' '+STAT[k].l+'</span>';
+  document.getElementById("floor-stats").innerHTML=sh;
+  var h="";
+  for(var b=1;b<=BAYS;b++){var st=STAT[getSt(f,b)]||STAT.not_started;
+    h+='<button class="bbtn" style="background:'+st.bg+';border-color:'+st.c+'33;color:'+st.c+'" onclick="showSurvey('+f+','+b+')">'+b+'<small>'+st.s+'</small></button>'}
+  document.getElementById("floor-grid").innerHTML=h;
+}
+
+function renderSurvey(){
+  var f=curFloor,b=curBay,d=curData;
+  var ref="F"+f+"-B"+(b<10?"0":"")+b;
+  var st=STAT[d.status]||STAT.not_started;
+  document.getElementById("survey-ref").textContent=ref;
+  document.getElementById("survey-badge").textContent=st.l;
+  document.getElementById("survey-badge").style.background=st.bg;
+  document.getElementById("survey-badge").style.color=st.c;
+  document.getElementById("status-select").value=d.status;
+  document.getElementById("survey-back").onclick=function(){saveCur();showFloor(f)};
+  document.getElementById("btn-prev").style.display=b>1?"":"none";
+  document.getElementById("btn-next").style.display=b<BAYS?"":"none";
+  document.getElementById("btn-prev").onclick=function(){saveCur();showSurvey(f,b-1)};
+  document.getElementById("btn-next").onclick=function(){saveCur();showSurvey(f,b+1)};
+  document.getElementById("btn-copy").style.display=b>1?"":"none";
+  document.getElementById("btn-copy").onclick=function(){var prev=load(f,b-1);if(prev){curData=JSON.parse(JSON.stringify(prev));curData.photos=[];curData.notes="";curData.surveyDate="";curData.status="in_progress";saveCur();renderSurvey()}};
+
+  var h="";
+  h+='<div class="sec"><h3>🪟 Blinds</h3>';
+  h+=mkyn("blinds","Blinds fitted?",d.blinds);
+  if(d.blinds===true){h+=mksel("blindsType","Blinds type",d.blindsType,["Vertical","Venetian","Roller","Roman","Pleated","Blackout","Other"]);h+=mksel("blindsCondition","Condition",d.blindsCondition,["Good","Fair","Poor","Damaged","Missing parts"]);h+=mkyn("blindsRemoval","Removal needed?",d.blindsRemoval)}
+  h+='</div>';
+
+  h+='<div class="sec"><h3>🪑 Desk & Furniture</h3>';
+  h+=mkyn("desk","Desk in front?",d.desk);
+  if(d.desk===true){h+=mksel("deskType","Desk type",d.deskType,["Single desk","Double desk","L-shaped","Bench desk","Standing desk","Fixed pedestal","Other"]);h+=mkyn("deskClearance","Clearance needed?",d.deskClearance)}
+  h+=mkyn("furniture","Other furniture?",d.furniture);
+  if(d.furniture===true)h+=mktxt("furnitureNotes","Details",d.furnitureNotes,false);
+  h+='</div>';
+
+  h+='<div class="sec"><h3>🧱 Wall Below Window</h3>';
+  h+=mkyn("insulated","Wall insulated?",d.insulated);
+  if(d.insulated===true){h+=mksel("insulationType","Type",d.insulationType,["Dry lining","PIR board","Mineral wool","Cavity fill","EWI","Unknown","Other"]);h+=mksel("insulationCondition","Condition",d.insulationCondition,["Good","Fair","Poor","Damaged","Unknown"])}
+  if(d.insulated===false)h+='<div class="warn">⚠ No insulation — may need works</div>';
+  h+='</div>';
+
+  h+='<div class="sec"><h3>🔍 Existing Window</h3>';
+  h+=mksel("windowType","Type",d.windowType,["Casement","Tilt & turn","Fixed","Sliding sash","Top hung","Side hung","Pivot","Louvre","Mixed","Other"]);
+  h+=mksel("glazing","Glazing",d.glazing,["Single","Double","Triple","Unknown"]);
+  h+=mksel("openingMech","Opening mechanism",d.openingMech,["Manual handle","Restrictor stay","Friction hinge","Crank","Motorised","Fixed/Non-opening","Other"]);
+  h+=mksel("frameCondition","Frame condition",d.frameCondition,["Good","Fair","Poor","Corroded","Rotten","Damaged"]);
+  h+=mksel("sealantCondition","Sealant condition",d.sealantCondition,["Good","Fair","Poor","Failed","Missing"]);
+  h+='</div>';
+
+  h+='<div class="sec"><h3>🔌 Services & Access</h3>';
+  h+=mkyn("cableRouting","Cable routing?",d.cableRouting);
+  if(d.cableRouting===true)h+=mktxt("cableNotes","Details",d.cableNotes,false);
+  h+=mkyn("radiator","Radiator below?",d.radiator);
+  if(d.radiator===true)h+=mksel("radiatorType","Type",d.radiatorType,["Panel","Column","Convector","Trench","Fan coil","Other"]);
+  h+=mksel("accessDifficulty","Access difficulty",d.accessDifficulty,["Easy","Moderate","Difficult","Requires scaffold/platform"]);
+  h+=mkyn("heightRestriction","Height restrictions?",d.heightRestriction);
+  if(d.heightRestriction===true)h+=mktxt("heightNotes","Details",d.heightNotes,false);
+  h+='</div>';
+
+  h+='<div class="sec"><h3>⚠️ Condition</h3>';
+  h+=mkyn("condensation","Condensation?",d.condensation);
+  h+=mkyn("draught","Draught?",d.draught);
+  h+=mktxt("internalDamage","Internal damage",d.internalDamage,false);
+  h+='</div>';
+
+  h+='<div class="sec"><h3>📷 Photos</h3>';
+  h+='<input type="file" id="cam" accept="image/*" capture="environment" style="display:none" onchange="addPhoto(this)">';
+  h+='<button class="pbtn" onclick="document.getElementById(\'cam\').click()">📸 Take Photo / Upload</button>';
+  if(d.photos&&d.photos.length>0){h+='<div class="pgrid">';for(var i=0;i<d.photos.length;i++)h+='<div class="pitem"><img src="'+d.photos[i].data+'"><button class="prem" onclick="rmPhoto('+i+')">×</button></div>';h+='</div>'}
+  h+='</div>';
+
+  h+='<div class="sec"><h3>📝 Details</h3>';
+  h+=mktxt("notes","Notes",d.notes,true);
+  h+=mktxt("surveyedBy","Surveyed by",d.surveyedBy,false);
+  h+=mktxt("surveyDate","Date",d.surveyDate,false,"YYYY-MM-DD");
+  h+='</div><div style="height:40px"></div>';
+
+  document.getElementById("survey-body").innerHTML=h;
+}
+
+function mkyn(id,label,val){
+  return '<div class="fld"><label>'+label+'</label><div class="ynrow"><button class="ybtn'+(val===true?" yes":"")+'" onclick="toggleYN(\''+id+'\',true)">Yes</button><button class="ybtn'+(val===false?" no":"")+'" onclick="toggleYN(\''+id+'\',false)">No</button></div></div>';
+}
+function mksel(id,label,val,opts){
+  var h='<div class="fld"><label>'+label+'</label><select class="inp" onchange="setField(\''+id+'\',this.value)"><option value="">Select...</option>';
+  for(var i=0;i<opts.length;i++)h+='<option value="'+opts[i]+'"'+(val===opts[i]?' selected':'')+'>'+opts[i]+'</option>';
+  return h+'</select></div>';
+}
+function mktxt(id,label,val,multi,ph){
+  if(multi)return '<div class="fld"><label>'+label+'</label><textarea class="inp" placeholder="'+(ph||"")+'" onchange="setField(\''+id+'\',this.value)">'+(val||'')+'</textarea></div>';
+  return '<div class="fld"><label>'+label+'</label><input class="inp" value="'+(val||'')+'" placeholder="'+(ph||"")+'" onchange="setField(\''+id+'\',this.value)"></div>';
+}
+
+function toggleYN(id,val){if(curData[id]===val)curData[id]=null;else curData[id]=val;saveCur();renderSurvey()}
+function setField(id,val){curData[id]=val;saveCur()}
+function setStatus(val){curData.status=val;if(val==="completed"&&!curData.surveyDate)curData.surveyDate=new Date().toISOString().split("T")[0];saveCur();renderSurvey()}
+function saveCur(){if(curFloor&&curBay&&curData)save(curFloor,curBay,curData)}
+
+function addPhoto(input){
+  var file=input.files&&input.files[0];if(!file)return;
+  var reader=new FileReader();
+  reader.onload=function(){if(!curData.photos)curData.photos=[];curData.photos.push({data:reader.result,name:file.name,ts:Date.now()});saveCur();renderSurvey()};
+  reader.readAsDataURL(file);input.value="";
+}
+function rmPhoto(i){curData.photos.splice(i,1);saveCur();renderSurvey()}
+
+function doCSV(){
+  var heads=["Reference","Floor","Bay","Status","Blinds","Blinds Type","Blinds Condition","Blinds Removal","Desk","Desk Type","Desk Clearance","Furniture","Furniture Notes","Insulated","Insulation Type","Insulation Condition","Window Type","Glazing","Opening Mech","Frame Condition","Sealant Condition","Cable Routing","Cable Notes","Radiator","Radiator Type","Access Difficulty","Height Restriction","Height Notes","Condensation","Draught","Internal Damage","Notes","Surveyed By","Survey Date"];
+  var rows=[],yn2=function(v){return v===true?"Yes":v===false?"No":""};
+  for(var f=1;f<=FLOORS;f++)for(var b=1;b<=BAYS;b++){var d=load(f,b);if(!d)continue;
+    rows.push(["F"+f+"-B"+(b<10?"0":"")+b,f,b,d.status,yn2(d.blinds),d.blindsType,d.blindsCondition,yn2(d.blindsRemoval),yn2(d.desk),d.deskType,yn2(d.deskClearance),yn2(d.furniture),d.furnitureNotes,yn2(d.insulated),d.insulationType,d.insulationCondition,d.windowType,d.glazing,d.openingMech,d.frameCondition,d.sealantCondition,yn2(d.cableRouting),d.cableNotes,yn2(d.radiator),d.radiatorType,d.accessDifficulty,yn2(d.heightRestriction),d.heightNotes,yn2(d.condensation),yn2(d.draught),d.internalDamage,d.notes,d.surveyedBy,d.surveyDate])}
+  var esc=function(v){return '"'+String(v||"").replace(/"/g,'""')+'"'};
+  var csv=heads.map(esc).join(",")+"\n"+rows.map(function(r){return r.map(esc).join(",")}).join("\n");
+  showResult(csv,"window-survey.csv","text/csv");
+}
+
+function doReport(){
+  var s={total:0,completed:0,flagged:0,blinds:0,desks:0,noIns:0,cable:0,rads:0,cond:0,draught:0,items:[]};
+  for(var f=1;f<=FLOORS;f++)for(var b=1;b<=BAYS;b++){var d=load(f,b);if(!d||d.status==="not_started")continue;s.total++;
+    if(d.status==="completed")s.completed++;if(d.status==="flagged"){s.flagged++;s.items.push("F"+f+"-B"+b+": "+(d.notes||"No notes"))}
+    if(d.blinds)s.blinds++;if(d.desk)s.desks++;if(d.insulated===false)s.noIns++;if(d.cableRouting)s.cable++;if(d.radiator)s.rads++;if(d.condensation)s.cond++;if(d.draught)s.draught++}
+  var r="WINDOW BAY SURVEY — SUMMARY REPORT\nGenerated: "+new Date().toLocaleDateString()+"\n=============================================\n\nPROGRESS\n  Surveyed: "+s.total+" / "+TOTAL+"\n  Completed: "+s.completed+"\n  Flagged: "+s.flagged+"\n\nKEY FINDINGS\n  Blinds fitted: "+s.blinds+"\n  Desks in front: "+s.desks+"\n  No insulation: "+s.noIns+"\n  Cable routing: "+s.cable+"\n  Radiators: "+s.rads+"\n  Condensation: "+s.cond+"\n  Draughts: "+s.draught+"\n\nFLAGGED ITEMS\n"+(s.items.length?s.items.map(function(x){return "  - "+x}).join("\n"):"  None")+"\n";
+  showResult(r,"survey-report.txt","text/plain");
+}
+
+function showResult(content,filename,type){
+  var el=document.getElementById("export-out");
+  el.innerHTML='<button class="dlbtn" id="dl-btn">⬇ Download '+filename+'</button><button class="cpbtn" id="cp-btn">📋 Copy</button><pre class="out">'+content.substring(0,3000)+(content.length>3000?"\n...":"")+'</pre>';
+  document.getElementById("dl-btn").onclick=function(){var blob=new Blob([content],{type:type});var url=URL.createObjectURL(blob);var a=document.createElement("a");a.href=url;a.download=filename;a.click();URL.revokeObjectURL(url)};
+  document.getElementById("cp-btn").onclick=function(){navigator.clipboard.writeText(content);this.textContent="✓ Copied!";var self=this;setTimeout(function(){self.textContent="📋 Copy"},2000)};
+}
+
+showDashboard();
+</script>
+</body>
+</html>
