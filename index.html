@@ -1,0 +1,583 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>Window Survey</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#0a0a1a;color:#e0e0e0;min-height:100vh}
+button{font-family:inherit;cursor:pointer;border:none;-webkit-appearance:none}
+select,input,textarea{font-family:inherit;font-size:16px;-webkit-appearance:none}
+.hide{display:none!important}
+.hdr{padding:16px;border-bottom:1px solid #222;background:#0f0f20}
+.hdr h1{font-size:18px;font-weight:700}
+.hdr p{font-size:12px;color:#888;margin-top:4px}
+.hdr-row{display:flex;justify-content:space-between;align-items:center}
+.stats{display:flex;gap:6px;padding:12px;overflow-x:auto}
+.sbox{flex:1;min-width:70px;background:#151528;border:1px solid #252540;border-radius:8px;padding:10px 6px;text-align:center}
+.sbox .num{font-size:22px;font-weight:700;font-family:monospace}
+.sbox .lbl{font-size:9px;color:#888;text-transform:uppercase;margin-top:2px}
+.pbar{margin:0 12px 12px;height:5px;background:#1a1a30;border-radius:3px;overflow:hidden}
+.pfill{height:100%;background:#22c55e;border-radius:3px;transition:width .3s}
+.flist{padding:8px 12px 30px}
+.fbtn{display:flex;align-items:center;gap:10px;width:100%;padding:12px;background:#111125;border:1px solid #222240;border-radius:6px;margin-bottom:6px;text-align:left;color:#e0e0e0}
+.fbtn:active{background:#1a1a35}
+.flbl{font-size:14px;font-weight:700;font-family:monospace;min-width:32px}
+.fbar{flex:1;height:5px;background:#1a1a30;border-radius:3px;overflow:hidden}
+.fbar-fill{height:100%;border-radius:3px}
+.fcnt{font-size:11px;color:#888;min-width:40px;text-align:right}
+.bgrid{padding:10px;display:grid;grid-template-columns:repeat(6,1fr);gap:5px}
+.bbtn{border-radius:6px;padding:12px 2px;display:flex;flex-direction:column;align-items:center;gap:1px;color:#e0e0e0;font-size:15px;font-weight:700;font-family:monospace;border:1px solid #333}
+.bbtn:active{opacity:.7}
+.bbtn small{font-size:7px;text-transform:uppercase;opacity:.7}
+.sticky{position:sticky;top:0;z-index:10;background:#0a0a1a;border-bottom:1px solid #222;padding:10px 14px}
+.sticky-row{display:flex;justify-content:space-between;align-items:center}
+.ref{font-size:18px;font-weight:700;font-family:monospace}
+.back{background:none;color:#999;font-size:13px;padding:0;margin-bottom:4px}
+.badge{font-size:10px;font-weight:700;padding:3px 8px;border-radius:4px;text-transform:uppercase}
+.nav-row{display:flex;gap:6px;margin-top:6px;flex-wrap:wrap}
+.nbtn{background:#1a1a30;border:1px solid #333;border-radius:4px;color:#aaa;padding:5px 10px;font-size:11px;font-weight:600}
+.sbody{padding:14px;max-width:700px}
+.sec{background:#111125;border:1px solid #222240;border-radius:8px;padding:14px;margin-bottom:10px}
+.sec h3{font-size:13px;font-weight:700;margin-bottom:12px}
+.fld{margin-bottom:12px}
+.fld label{display:block;font-size:12px;color:#999;margin-bottom:5px;font-weight:500}
+.ynrow{display:flex;gap:6px}
+.ybtn{flex:1;padding:8px 0;border-radius:4px;font-size:13px;font-weight:600;background:#151528;border:1px solid #333;color:#888;text-align:center}
+.ybtn.yes{background:#0a2a15;border-color:#22c55e;color:#22c55e}
+.ybtn.no{background:#2a0a0a;border-color:#ef4444;color:#ef4444}
+.inp{width:100%;background:#0e0e20;border:1px solid #333;border-radius:4px;color:#e0e0e0;padding:8px 10px;outline:none}
+.inp:focus{border-color:#3b82f6}
+textarea.inp{resize:vertical;min-height:70px}
+.warn{padding:8px;background:#2a1a00;border:1px solid #554400;border-radius:4px;font-size:12px;color:#eab308;margin-bottom:10px}
+.pbtn{width:100%;padding:14px;background:#151528;border:2px dashed #333;border-radius:8px;color:#999;font-size:13px;font-weight:600;margin-bottom:10px}
+.pgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+.pitem{position:relative;border-radius:6px;overflow:hidden;border:1px solid #333}
+.pitem img{width:100%;height:80px;object-fit:cover;display:block}
+.prem{position:absolute;top:3px;right:3px;background:#ef4444;border-radius:50%;width:22px;height:22px;color:#fff;font-size:12px;display:flex;align-items:center;justify-content:center}
+.ecard{background:#111125;border:2px solid #222240;border-radius:8px;padding:18px;margin-bottom:10px;text-align:left;width:100%;color:#e0e0e0}
+.ecard:active{border-color:#444}
+.ecard .icon{font-size:24px;margin-bottom:4px}
+.ecard .title{font-size:14px;font-weight:700}
+.ecard .desc{font-size:12px;color:#888}
+.dlbtn{background:#0a2a15;border:1px solid #22c55e44;border-radius:4px;color:#22c55e;padding:10px 18px;font-size:13px;font-weight:600;margin-top:12px;margin-right:8px}
+.cpbtn{background:#1a1a30;border:1px solid #333;border-radius:4px;color:#aaa;padding:10px 18px;font-size:13px;font-weight:600;margin-top:12px}
+pre.out{background:#0e0e20;border:1px solid #222;border-radius:6px;padding:10px;font-size:10px;color:#999;overflow:auto;max-height:250px;white-space:pre-wrap;word-break:break-all;margin-top:12px}
+.status-row{display:flex;align-items:center;gap:8px;margin-top:6px}
+.status-row label{font-size:11px;color:#888;white-space:nowrap}
+.status-row select{flex:1;background:#0e0e20;border:1px solid #333;border-radius:4px;color:#e0e0e0;padding:6px 8px;font-size:12px;font-weight:600}
+.sum-section{background:#111125;border:1px solid #222240;border-radius:8px;padding:14px;margin-bottom:10px}
+.sum-section h3{font-size:13px;font-weight:700;margin-bottom:10px;color:#e0e0e0}
+.sum-row{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid #1a1a30;font-size:13px}
+.sum-row:last-child{border-bottom:none}
+.sum-label{color:#999}
+.sum-val{font-weight:700;font-family:monospace;font-size:15px}
+</style>
+</head>
+<body>
+
+<div id="page-dashboard">
+  <div class="hdr"><div class="hdr-row"><div><h1>🪟 Window Bay Survey</h1><p>21 floors × 36 bays = 756 windows</p></div><div style="display:flex;gap:6px"><button class="nbtn" onclick="showSummary()">Summary</button><button class="nbtn" onclick="showExport()">Export</button></div></div></div>
+  <div class="stats" id="dash-stats"></div>
+  <div class="pbar"><div class="pfill" id="dash-pbar"></div></div>
+  <div class="flist" id="dash-floors"></div>
+</div>
+
+<div id="page-floor" class="hide">
+  <div class="sticky">
+    <button class="back" onclick="showDashboard()">← All Floors</button>
+    <div class="sticky-row"><h2 id="floor-title"></h2></div>
+    <div id="floor-stats" style="display:flex;gap:10px;margin-top:6px;font-size:11px"></div>
+    <div class="pbar" style="margin:8px 0 0"><div class="pfill" id="floor-pbar"></div></div>
+  </div>
+  <div class="bgrid" id="floor-grid"></div>
+</div>
+
+<div id="page-survey" class="hide">
+  <div class="sticky">
+    <div class="sticky-row"><button class="back" id="survey-back">← Back</button><span class="badge" id="survey-badge"></span></div>
+    <div class="sticky-row" style="margin-top:4px">
+      <span class="ref" id="survey-ref"></span>
+      <div style="display:flex;gap:4px"><button class="nbtn" id="btn-prev">◀ Prev</button><button class="nbtn" id="btn-next">Next ▶</button></div>
+    </div>
+    <div class="nav-row"><button class="nbtn" id="btn-copy">Copy Previous Bay</button></div>
+    <div class="status-row">
+      <label>Status:</label>
+      <select id="status-select" onchange="setStatus(this.value)">
+        <option value="not_started">Not Started</option>
+        <option value="in_progress">In Progress</option>
+        <option value="completed">Completed</option>
+      </select>
+    </div>
+  </div>
+  <div class="sbody" id="survey-body"></div>
+</div>
+
+<div id="page-export" class="hide">
+  <div style="padding:14px">
+    <button class="back" onclick="showDashboard()">← Back</button>
+    <h2 style="margin:10px 0 16px;font-size:18px">Export Survey Data</h2>
+    <button class="ecard" onclick="doHTMLReport()"><div class="icon">📄</div><div class="title">Full HTML Report</div><div class="desc">Read-only app with all data + photos</div></button>
+    <button class="ecard" onclick="doCSV()"><div class="icon">📊</div><div class="title">Export CSV</div><div class="desc">Data for Excel — no photos</div></button>
+    <div id="export-progress" style="display:none;margin-top:12px;padding:12px;background:#111125;border:1px solid #222240;border-radius:8px">
+      <div style="font-size:13px;color:#eab308;margin-bottom:8px" id="export-prog-text">Generating report...</div>
+      <div class="pbar"><div class="pfill" id="export-prog-bar" style="width:0%"></div></div>
+    </div>
+    <div id="export-out"></div>
+  </div>
+</div>
+
+<div id="page-summary" class="hide">
+  <div style="padding:14px">
+    <button class="back" onclick="showDashboard()">← Back</button>
+    <h2 style="margin:10px 0 6px;font-size:18px">📊 Costing Summary</h2>
+    <p style="font-size:12px;color:#888;margin-bottom:14px">Live quantities from survey data</p>
+    <div id="summary-content"></div>
+  </div>
+</div>
+
+<script>
+var FLOORS=21, BAYS=36, TOTAL=756;
+var STAT={
+  not_started:{c:"#64748b",bg:"#1e293b",l:"Not Started",s:"—"},
+  in_progress:{c:"#eab308",bg:"#422006",l:"In Progress",s:"WIP"},
+  completed:{c:"#22c55e",bg:"#052e16",l:"Completed",s:"Done"}
+};
+var curFloor=null, curBay=null, curData=null;
+
+function skey(f,b){return "ws_"+f+"_"+b}
+function load(f,b){try{var d=localStorage.getItem(skey(f,b));return d?JSON.parse(d):null}catch(e){return null}}
+function save(f,b,d){try{localStorage.setItem(skey(f,b),JSON.stringify(d))}catch(e){}var idx=getIdx();idx[f+"-"+b]=d.status;try{localStorage.setItem("ws_idx",JSON.stringify(idx))}catch(e){}}
+function getIdx(){try{var d=localStorage.getItem("ws_idx");return d?JSON.parse(d):{}}catch(e){return {}}}
+function getSt(f,b){var idx=getIdx();return idx[f+"-"+b]||"not_started"}
+function emptyData(){return{
+  blinds:null,blindsType:"",
+  desk:null,deskQty:"",
+  furniture:null,furnitureNotes:"",
+  wallBelow:"",wallComments:"",
+  windowType:"",
+  cableRouting:null,cableNotes:"",
+  radiator:null,radiatorType:"",
+  pipework:null,pipeworkNotes:"",
+  bulkhead:null,bulkheadRemoval:null,ceilingComments:"",
+  fabricCondition:null,fabricNotes:"",
+  photos:[],notes:"",
+  status:"not_started",surveyedBy:"",surveyDate:""
+}}
+
+function hideAll(){
+  document.getElementById("page-dashboard").className="hide";
+  document.getElementById("page-floor").className="hide";
+  document.getElementById("page-survey").className="hide";
+  document.getElementById("page-export").className="hide";
+  document.getElementById("page-summary").className="hide";
+}
+function showDashboard(){hideAll();document.getElementById("page-dashboard").className="";renderDashboard()}
+function showFloor(f){curFloor=f;hideAll();document.getElementById("page-floor").className="";renderFloor()}
+function showSurvey(f,b){curFloor=f;curBay=b;curData=load(f,b)||emptyData();hideAll();document.getElementById("page-survey").className="";renderSurvey()}
+function showExport(){hideAll();document.getElementById("page-export").className="";document.getElementById("export-out").innerHTML="";document.getElementById("export-progress").style.display="none"}
+function showSummary(){hideAll();document.getElementById("page-summary").className="";renderSummary()}
+
+function renderSummary(){
+  var s={surveyed:0,completed:0,blindsYes:0,blindsTypes:{},deskYes:0,totalDesks:0,furnitureYes:0,wallTypes:{},wallNoIns:0,winTypes:{},cableYes:0,radYes:0,radTypes:{},pipeYes:0,bulkYes:0,bulkRemoval:0,fabricBad:0,photoCount:0};
+  function inc(obj,key){if(!key)return;obj[key]=(obj[key]||0)+1}
+  for(var f=1;f<=FLOORS;f++){for(var b=1;b<=BAYS;b++){var d=load(f,b);if(!d||d.status==="not_started")continue;s.surveyed++;
+    if(d.status==="completed")s.completed++;
+    if(d.blinds){s.blindsYes++;inc(s.blindsTypes,d.blindsType)}
+    if(d.desk){s.deskYes++;s.totalDesks+=parseInt(d.deskQty)||1}
+    if(d.furniture)s.furnitureYes++;
+    inc(s.wallTypes,d.wallBelow);if(d.wallBelow==="Original blockwork")s.wallNoIns++;
+    inc(s.winTypes,d.windowType);
+    if(d.cableRouting)s.cableYes++;if(d.radiator){s.radYes++;inc(s.radTypes,d.radiatorType)}
+    if(d.pipework)s.pipeYes++;if(d.bulkhead)s.bulkYes++;if(d.bulkheadRemoval)s.bulkRemoval++;
+    if(d.fabricCondition===false)s.fabricBad++;
+    if(d.photos)s.photoCount+=d.photos.length;
+  }}
+
+  function row(label,val,color){return '<div class="sum-row"><span class="sum-label">'+label+'</span><span class="sum-val" style="color:'+(color||"#e0e0e0")+'">'+val+'</span></div>'}
+  function breakdownRows(obj){var h="";for(var k in obj)if(k)h+=row("  "+k,obj[k],"#aaa");return h}
+
+  var h="";
+  h+='<div class="sum-section"><h3>📋 Progress</h3>';
+  h+=row("Total bays",TOTAL);h+=row("Surveyed",s.surveyed,"#3b82f6");h+=row("Completed",s.completed,"#22c55e");h+=row("Remaining",TOTAL-s.surveyed,"#eab308");h+=row("Photos taken",s.photoCount,"#3b82f6");h+='</div>';
+
+  h+='<div class="sum-section"><h3>🪟 Blinds Removal</h3>';
+  h+=row("Blinds fitted (all need removing)",s.blindsYes,"#eab308");
+  if(Object.keys(s.blindsTypes).length>0){h+='<div style="margin-top:6px;font-size:11px;color:#666;font-weight:600">BY TYPE</div>';h+=breakdownRows(s.blindsTypes)}h+='</div>';
+
+  h+='<div class="sum-section"><h3>🪑 Desk & Furniture</h3>';
+  h+=row("Bays with desks",s.deskYes,"#e0e0e0");h+=row("⚡ Total desks to move",s.totalDesks,"#eab308");h+=row("Other furniture obstructions",s.furnitureYes,"#eab308");h+='</div>';
+
+  h+='<div class="sum-section"><h3>🧱 Wall Below Window</h3>';
+  h+=row("⚡ Original blockwork (no insulation)",s.wallNoIns,"#ef4444");
+  if(Object.keys(s.wallTypes).length>0){h+='<div style="margin-top:6px;font-size:11px;color:#666;font-weight:600">BREAKDOWN</div>';h+=breakdownRows(s.wallTypes)}h+='</div>';
+
+  h+='<div class="sum-section"><h3>🔍 Window Types</h3>';
+  if(Object.keys(s.winTypes).length>0)h+=breakdownRows(s.winTypes);h+='</div>';
+
+  h+='<div class="sum-section"><h3>🔌 Services</h3>';
+  h+=row("⚡ Cable routing to reroute",s.cableYes,"#eab308");h+=row("⚡ Radiators to remove/refit",s.radYes,"#eab308");
+  if(Object.keys(s.radTypes).length>0){h+='<div style="margin-top:6px;font-size:11px;color:#666;font-weight:600">RADIATOR TYPES</div>';h+=breakdownRows(s.radTypes)}
+  h+=row("⚡ Pipework present",s.pipeYes,"#eab308");h+='</div>';
+
+  h+='<div class="sum-section"><h3>🏗 Ceilings</h3>';
+  h+=row("Bulkheads/ceiling details",s.bulkYes,"#e0e0e0");h+=row("⚡ Need removing/replacing",s.bulkRemoval,"#eab308");h+='</div>';
+
+  h+='<div class="sum-section"><h3>⚠️ Fabric Condition</h3>';
+  h+=row("⚡ Fabric in poor condition",s.fabricBad,"#ef4444");h+='</div>';
+
+  document.getElementById("summary-content").innerHTML=h;
+}
+
+function renderDashboard(){
+  var idx=getIdx(),done=0,prog=0;
+  for(var k in idx){if(idx[k]==="completed")done++;else if(idx[k]==="in_progress")prog++}
+  var pct=Math.round((done/TOTAL)*100);
+  document.getElementById("dash-stats").innerHTML='<div class="sbox"><div class="num" style="color:#e0e0e0">'+pct+'%</div><div class="lbl">Complete</div></div><div class="sbox"><div class="num" style="color:#22c55e">'+done+'</div><div class="lbl">Done</div></div><div class="sbox"><div class="num" style="color:#eab308">'+prog+'</div><div class="lbl">In Progress</div></div><div class="sbox"><div class="num" style="color:#888">'+(TOTAL-done-prog)+'</div><div class="lbl">Remaining</div></div>';
+  document.getElementById("dash-pbar").style.width=pct+"%";
+  var h="";
+  for(var f=FLOORS;f>=1;f--){var fc=0;for(var b=1;b<=BAYS;b++){if(getSt(f,b)==="completed")fc++}var fp=Math.round((fc/BAYS)*100);
+    h+='<button class="fbtn" onclick="showFloor('+f+')"><span class="flbl">F'+f+'</span><div class="fbar"><div class="fbar-fill" style="width:'+fp+'%;background:'+(fp===100?"#22c55e":"#3b82f6")+'"></div></div><span class="fcnt">'+fc+'/'+BAYS+'</span></button>'}
+  document.getElementById("dash-floors").innerHTML=h;
+}
+
+function renderFloor(){
+  var f=curFloor;
+  document.getElementById("floor-title").textContent="Floor "+f;
+  var stats={not_started:0,in_progress:0,completed:0};
+  for(var b=1;b<=BAYS;b++){var s=getSt(f,b);stats[s]=(stats[s]||0)+1}
+  document.getElementById("floor-pbar").style.width=Math.round((stats.completed/BAYS)*100)+"%";
+  var sh="";for(var k in STAT)sh+='<span style="color:'+STAT[k].c+'">'+stats[k]+' '+STAT[k].l+'</span>';
+  document.getElementById("floor-stats").innerHTML=sh;
+  var h="";
+  for(var b=1;b<=BAYS;b++){var st=STAT[getSt(f,b)]||STAT.not_started;
+    h+='<button class="bbtn" style="background:'+st.bg+';border-color:'+st.c+'33;color:'+st.c+'" onclick="showSurvey('+f+','+b+')">'+b+'<small>'+st.s+'</small></button>'}
+  document.getElementById("floor-grid").innerHTML=h;
+}
+
+function renderSurvey(){
+  var f=curFloor,b=curBay,d=curData;
+  var ref="F"+f+"-B"+(b<10?"0":"")+b;
+  var st=STAT[d.status]||STAT.not_started;
+  document.getElementById("survey-ref").textContent=ref;
+  document.getElementById("survey-badge").textContent=st.l;
+  document.getElementById("survey-badge").style.background=st.bg;
+  document.getElementById("survey-badge").style.color=st.c;
+  document.getElementById("status-select").value=d.status;
+  document.getElementById("survey-back").onclick=function(){saveCur();showFloor(f)};
+  document.getElementById("btn-prev").style.display=b>1?"":"none";
+  document.getElementById("btn-next").style.display=b<BAYS?"":"none";
+  document.getElementById("btn-prev").onclick=function(){saveCur();showSurvey(f,b-1)};
+  document.getElementById("btn-next").onclick=function(){saveCur();showSurvey(f,b+1)};
+  document.getElementById("btn-copy").style.display=b>1?"":"none";
+  document.getElementById("btn-copy").onclick=function(){var prev=load(f,b-1);if(prev){curData=JSON.parse(JSON.stringify(prev));curData.photos=[];curData.notes="";curData.surveyDate="";curData.status="in_progress";saveCur();renderSurvey()}};
+
+  var h="";
+
+  // Blinds
+  h+='<div class="sec"><h3>🪟 Blinds</h3>';
+  h+=mkyn("blinds","Blinds fitted?",d.blinds);
+  if(d.blinds===true){
+    h+=mksel("blindsType","Blinds type",d.blindsType,["Vertical","Venetian","Roller","Roman","Pleated","Blackout","Other"]);
+  }
+  h+='</div>';
+
+  // Desk & Furniture
+  h+='<div class="sec"><h3>🪑 Desk & Furniture</h3>';
+  h+=mkyn("desk","Desk in front of window?",d.desk);
+  if(d.desk===true){
+    h+=mknum("deskQty","How many desks to move?",d.deskQty);
+  }
+  h+=mkyn("furniture","Other furniture obstruction?",d.furniture);
+  if(d.furniture===true){h+=mktxt("furnitureNotes","Furniture details",d.furnitureNotes,false)}
+  h+='</div>';
+
+  // Wall below
+  h+='<div class="sec"><h3>🧱 Wall Below Window</h3>';
+  h+=mksel("wallBelow","Wall below window",d.wallBelow,["Insulated lining","Original blockwork","Unknown"]);
+  h+=mktxt("wallComments","Comments",d.wallComments,false);
+  h+='</div>';
+
+  // Existing window
+  h+='<div class="sec"><h3>🔍 Existing Window</h3>';
+  h+=mksel("windowType","Window type",d.windowType,["Standard","Full height"]);
+  h+='</div>';
+
+  // Services
+  h+='<div class="sec"><h3>🔌 Services</h3>';
+  h+=mkyn("cableRouting","Cable routing / trunking?",d.cableRouting);
+  if(d.cableRouting===true)h+=mktxt("cableNotes","Cable routing details",d.cableNotes,false);
+  h+=mkyn("radiator","Radiator below window?",d.radiator);
+  if(d.radiator===true)h+=mksel("radiatorType","Radiator type",d.radiatorType,["Panel","Column","Convector","Trench","Fan coil","Other"]);
+  h+=mkyn("pipework","Pipework present?",d.pipework);
+  if(d.pipework===true)h+=mktxt("pipeworkNotes","Pipework details",d.pipeworkNotes,false);
+  h+='</div>';
+
+  // Ceilings
+  h+='<div class="sec"><h3>🏗 Ceilings</h3>';
+  h+=mkyn("bulkhead","Bulkheads / ceiling details affecting install?",d.bulkhead);
+  if(d.bulkhead===true){
+    h+=mkyn("bulkheadRemoval","Need removing/replacing as part of works?",d.bulkheadRemoval);
+  }
+  h+=mktxt("ceilingComments","Ceiling comments",d.ceilingComments,false);
+  h+='</div>';
+
+  // Fabric condition
+  h+='<div class="sec"><h3>⚠️ Fabric Condition</h3>';
+  h+=mkyn("fabricCondition","Is the fabric around the windows in good condition?",d.fabricCondition);
+  if(d.fabricCondition===false){
+    h+=mktxt("fabricNotes","Describe the issues",d.fabricNotes,true);
+  }
+  h+='</div>';
+
+  // Photos
+  h+='<div class="sec"><h3>📷 Photos</h3>';
+  h+='<input type="file" id="cam" accept="image/*" capture="environment" style="display:none" onchange="addPhoto(this)">';
+  h+='<button class="pbtn" onclick="document.getElementById(\'cam\').click()">📸 Take Photo / Upload</button>';
+  if(d.photos&&d.photos.length>0){h+='<div class="pgrid">';for(var i=0;i<d.photos.length;i++)h+='<div class="pitem"><img src="'+d.photos[i].data+'"><button class="prem" onclick="rmPhoto('+i+')">×</button></div>';h+='</div>'}
+  h+='</div>';
+
+  // Notes
+  h+='<div class="sec"><h3>📝 Survey Details</h3>';
+  h+=mktxt("notes","General notes",d.notes,true);
+  h+=mktxt("surveyedBy","Surveyed by",d.surveyedBy,false);
+  h+=mktxt("surveyDate","Survey date",d.surveyDate,false,"YYYY-MM-DD");
+  h+='</div><div style="height:40px"></div>';
+
+  document.getElementById("survey-body").innerHTML=h;
+}
+
+// Field builders
+function mkyn(id,label,val){
+  return '<div class="fld"><label>'+label+'</label><div class="ynrow"><button class="ybtn'+(val===true?" yes":"")+'" onclick="toggleYN(\''+id+'\',true)">Yes</button><button class="ybtn'+(val===false?" no":"")+'" onclick="toggleYN(\''+id+'\',false)">No</button></div></div>';
+}
+function mksel(id,label,val,opts){
+  var h='<div class="fld"><label>'+label+'</label><select class="inp" onchange="setField(\''+id+'\',this.value)"><option value="">Select...</option>';
+  for(var i=0;i<opts.length;i++)h+='<option value="'+opts[i]+'"'+(val===opts[i]?' selected':'')+'>'+opts[i]+'</option>';
+  return h+'</select></div>';
+}
+function mktxt(id,label,val,multi,ph){
+  if(multi)return '<div class="fld"><label>'+label+'</label><textarea class="inp" placeholder="'+(ph||"")+'" onchange="setField(\''+id+'\',this.value)">'+(val||'')+'</textarea></div>';
+  return '<div class="fld"><label>'+label+'</label><input class="inp" value="'+(val||'')+'" placeholder="'+(ph||"")+'" onchange="setField(\''+id+'\',this.value)"></div>';
+}
+function mknum(id,label,val){
+  return '<div class="fld"><label>'+label+'</label><input type="number" class="inp" value="'+(val||'')+'" min="1" max="20" onchange="setField(\''+id+'\',this.value)"></div>';
+}
+
+// Actions
+function toggleYN(id,val){
+  if(curData[id]===val)curData[id]=null;else curData[id]=val;
+  autoProgress();saveCur();renderSurvey();
+}
+function setField(id,val){
+  curData[id]=val;
+  autoProgress();saveCur();
+}
+function autoProgress(){
+  if(curData.status==="not_started"){
+    var dominated=false;
+    var keys=["blinds","desk","furniture","wallBelow","windowType","cableRouting","radiator","pipework","bulkhead","fabricCondition"];
+    for(var i=0;i<keys.length;i++){if(curData[keys[i]]!==null&&curData[keys[i]]!==""){dominated=true;break}}
+    if(dominated){curData.status="in_progress"}
+  }
+}
+function setStatus(val){curData.status=val;if(val==="completed"&&!curData.surveyDate)curData.surveyDate=new Date().toISOString().split("T")[0];saveCur();renderSurvey()}
+function saveCur(){if(curFloor&&curBay&&curData)save(curFloor,curBay,curData)}
+
+function addPhoto(input){
+  var file=input.files&&input.files[0];if(!file)return;
+  var reader=new FileReader();
+  reader.onload=function(){
+    var img=new Image();
+    img.onload=function(){
+      var MAX=800;var w=img.width,h=img.height;
+      if(w>MAX){h=Math.round(h*(MAX/w));w=MAX}
+      var canvas=document.createElement("canvas");canvas.width=w;canvas.height=h;
+      var ctx=canvas.getContext("2d");ctx.drawImage(img,0,0,w,h);
+      var compressed=canvas.toDataURL("image/jpeg",0.7);
+      if(!curData.photos)curData.photos=[];
+      curData.photos.push({data:compressed,name:file.name,ts:Date.now()});
+      autoProgress();saveCur();renderSurvey();
+    };
+    img.src=reader.result;
+  };
+  reader.readAsDataURL(file);input.value="";
+}
+function rmPhoto(i){curData.photos.splice(i,1);saveCur();renderSurvey()}
+
+// HTML Report Export
+function doHTMLReport(){
+  var prog=document.getElementById("export-progress");
+  prog.style.display="block";
+  document.getElementById("export-prog-text").textContent="Gathering survey data...";
+  document.getElementById("export-prog-bar").style.width="5%";
+
+  setTimeout(function(){
+    var allData={};var photoCount=0;
+    for(var f=1;f<=FLOORS;f++)for(var b=1;b<=BAYS;b++){var d=load(f,b);if(d){allData[f+"-"+b]=d;if(d.photos)photoCount+=d.photos.length}}
+
+    document.getElementById("export-prog-text").textContent="Building report ("+photoCount+" photos)...";
+    document.getElementById("export-prog-bar").style.width="20%";
+
+    setTimeout(function(){
+      var yn2=function(v){return v===true?"Yes":v===false?"No":"—"};
+      var val=function(v){return v||"—"};
+
+      // Summary data
+      var sm={surveyed:0,completed:0,blindsYes:0,totalDesks:0,deskYes:0,furnitureYes:0,wallNoIns:0,cableYes:0,radYes:0,pipeYes:0,bulkYes:0,bulkRemoval:0,fabricBad:0,photos:photoCount};
+      for(var k in allData){var d=allData[k];if(d.status==="not_started")continue;sm.surveyed++;
+        if(d.status==="completed")sm.completed++;
+        if(d.blinds)sm.blindsYes++;if(d.desk){sm.deskYes++;sm.totalDesks+=parseInt(d.deskQty)||1}
+        if(d.furniture)sm.furnitureYes++;if(d.wallBelow==="Original blockwork")sm.wallNoIns++;
+        if(d.cableRouting)sm.cableYes++;if(d.radiator)sm.radYes++;if(d.pipework)sm.pipeYes++;
+        if(d.bulkhead)sm.bulkYes++;if(d.bulkheadRemoval)sm.bulkRemoval++;if(d.fabricCondition===false)sm.fabricBad++}
+
+      // CSV
+      var csvH=["Reference","Floor","Bay","Status","Blinds","Blinds Type","Desk","Desk Qty","Furniture","Furniture Notes","Wall Below","Wall Comments","Window Type","Cable Routing","Cable Notes","Radiator","Radiator Type","Pipework","Pipework Notes","Bulkhead","Bulkhead Removal","Ceiling Comments","Fabric OK","Fabric Notes","Notes","Surveyed By","Date"];
+      var csvR=[];
+      for(var f=1;f<=FLOORS;f++)for(var b=1;b<=BAYS;b++){var d=allData[f+"-"+b];if(!d)continue;
+        csvR.push(["F"+f+"-B"+(b<10?"0":"")+b,f,b,d.status,yn2(d.blinds),d.blindsType,yn2(d.desk),d.deskQty,yn2(d.furniture),d.furnitureNotes,d.wallBelow,d.wallComments,d.windowType,yn2(d.cableRouting),d.cableNotes,yn2(d.radiator),d.radiatorType,yn2(d.pipework),d.pipeworkNotes,yn2(d.bulkhead),yn2(d.bulkheadRemoval),d.ceilingComments,yn2(d.fabricCondition),d.fabricNotes,d.notes,d.surveyedBy,d.surveyDate])}
+      var esc=function(v){return '"'+String(v||"").replace(/"/g,'""')+'"'};
+      var csvString=csvH.map(esc).join(",")+"\n"+csvR.map(function(r){return r.map(esc).join(",")}).join("\n");
+      var csvEncoded=encodeURIComponent(csvString);
+
+      document.getElementById("export-prog-bar").style.width="40%";
+
+      // Floor HTML
+      var floorHTML="";
+      for(var f=1;f<=FLOORS;f++){
+        var bayCards="",floorHasData=false;
+        for(var b=1;b<=BAYS;b++){
+          var d=allData[f+"-"+b];if(!d)continue;floorHasData=true;
+          var ref="F"+f+"-B"+(b<10?"0":"")+b;
+          var stC={not_started:{c:"#64748b",l:"Not Started"},in_progress:{c:"#eab308",l:"In Progress"},completed:{c:"#22c55e",l:"Completed"}};
+          var st=stC[d.status]||stC.not_started;
+
+          var photoH="";
+          if(d.photos&&d.photos.length>0){photoH='<div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:8px">';
+            for(var p=0;p<d.photos.length;p++)photoH+='<img src="'+d.photos[p].data+'" style="width:180px;height:120px;object-fit:cover;border-radius:4px;border:1px solid #333">';
+            photoH+='</div>'}
+
+          bayCards+='<div style="background:#111125;border:1px solid #222240;border-radius:8px;padding:14px;margin-bottom:8px">';
+          bayCards+='<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px"><span style="font-size:16px;font-weight:700;font-family:monospace">'+ref+'</span><span style="font-size:10px;font-weight:700;padding:3px 8px;border-radius:4px;color:'+st.c+';background:'+st.c+'15">'+st.l+'</span></div>';
+          bayCards+='<table style="width:100%;font-size:12px;border-collapse:collapse">';
+          bayCards+='<tr><td style="padding:3px 8px 3px 0;color:#888;width:40%">Blinds</td><td>'+yn2(d.blinds)+'</td></tr>';
+          if(d.blinds)bayCards+='<tr><td style="padding:3px 8px 3px 0;color:#888">Blinds Type</td><td>'+val(d.blindsType)+'</td></tr>';
+          bayCards+='<tr><td style="padding:3px 8px 3px 0;color:#888">Desk</td><td>'+yn2(d.desk)+'</td></tr>';
+          if(d.desk)bayCards+='<tr><td style="padding:3px 8px 3px 0;color:#888">Desks to Move</td><td>'+val(d.deskQty)+'</td></tr>';
+          if(d.furniture)bayCards+='<tr><td style="padding:3px 8px 3px 0;color:#888">Furniture</td><td>'+val(d.furnitureNotes)+'</td></tr>';
+          bayCards+='<tr><td style="padding:3px 8px 3px 0;color:#888">Wall Below</td><td'+(d.wallBelow==="Original blockwork"?' style="color:#ef4444;font-weight:700"':'')+'>'+val(d.wallBelow)+'</td></tr>';
+          if(d.wallComments)bayCards+='<tr><td style="padding:3px 8px 3px 0;color:#888">Wall Comments</td><td>'+val(d.wallComments)+'</td></tr>';
+          bayCards+='<tr><td style="padding:3px 8px 3px 0;color:#888">Window Type</td><td>'+val(d.windowType)+'</td></tr>';
+          bayCards+='<tr><td style="padding:3px 8px 3px 0;color:#888">Cable Routing</td><td>'+yn2(d.cableRouting)+'</td></tr>';
+          if(d.cableRouting&&d.cableNotes)bayCards+='<tr><td style="padding:3px 8px 3px 0;color:#888">Cable Notes</td><td>'+val(d.cableNotes)+'</td></tr>';
+          bayCards+='<tr><td style="padding:3px 8px 3px 0;color:#888">Radiator</td><td>'+yn2(d.radiator)+'</td></tr>';
+          if(d.radiator)bayCards+='<tr><td style="padding:3px 8px 3px 0;color:#888">Radiator Type</td><td>'+val(d.radiatorType)+'</td></tr>';
+          bayCards+='<tr><td style="padding:3px 8px 3px 0;color:#888">Pipework</td><td>'+yn2(d.pipework)+'</td></tr>';
+          if(d.pipework&&d.pipeworkNotes)bayCards+='<tr><td style="padding:3px 8px 3px 0;color:#888">Pipework Notes</td><td>'+val(d.pipeworkNotes)+'</td></tr>';
+          bayCards+='<tr><td style="padding:3px 8px 3px 0;color:#888">Bulkhead/Ceiling</td><td>'+yn2(d.bulkhead)+'</td></tr>';
+          if(d.bulkhead)bayCards+='<tr><td style="padding:3px 8px 3px 0;color:#888">Removal Needed</td><td>'+yn2(d.bulkheadRemoval)+'</td></tr>';
+          if(d.ceilingComments)bayCards+='<tr><td style="padding:3px 8px 3px 0;color:#888">Ceiling Comments</td><td>'+val(d.ceilingComments)+'</td></tr>';
+          bayCards+='<tr><td style="padding:3px 8px 3px 0;color:#888">Fabric Condition</td><td'+(d.fabricCondition===false?' style="color:#ef4444;font-weight:700"':'')+'>'+yn2(d.fabricCondition)+'</td></tr>';
+          if(d.fabricCondition===false&&d.fabricNotes)bayCards+='<tr><td style="padding:3px 8px 3px 0;color:#888">Fabric Issues</td><td style="color:#ef4444">'+val(d.fabricNotes)+'</td></tr>';
+          if(d.notes)bayCards+='<tr><td style="padding:3px 8px 3px 0;color:#888">Notes</td><td>'+val(d.notes)+'</td></tr>';
+          bayCards+='<tr><td style="padding:3px 8px 3px 0;color:#888">Surveyed By</td><td>'+val(d.surveyedBy)+'</td></tr>';
+          bayCards+='<tr><td style="padding:3px 8px 3px 0;color:#888">Date</td><td>'+val(d.surveyDate)+'</td></tr>';
+          bayCards+='</table>'+photoH+'</div>';
+        }
+        if(floorHasData){
+          var fc=0;for(var b=1;b<=BAYS;b++){var dd=allData[f+"-"+b];if(dd&&dd.status==="completed")fc++}
+          floorHTML+='<div style="margin-bottom:20px">';
+          floorHTML+='<div style="display:flex;justify-content:space-between;align-items:center;padding:12px 0;border-bottom:2px solid #222;margin-bottom:10px;cursor:pointer" onclick="var el=document.getElementById(\'fb-'+f+'\');el.style.display=el.style.display===\'none\'?\'block\':\'none\'">';
+          floorHTML+='<h2 style="font-size:16px;font-weight:700">Floor '+f+'</h2>';
+          floorHTML+='<div style="display:flex;gap:8px;font-size:11px"><span style="color:#22c55e">'+fc+' done</span><span style="color:#888">▼</span></div>';
+          floorHTML+='</div><div id="fb-'+f+'">'+bayCards+'</div></div>';
+        }
+      }
+
+      document.getElementById("export-prog-text").textContent="Assembling HTML...";
+      document.getElementById("export-prog-bar").style.width="70%";
+
+      setTimeout(function(){
+        var html='<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>Window Survey Report</title>';
+        html+='<style>*{margin:0;padding:0;box-sizing:border-box}body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:#0a0a1a;color:#e0e0e0;min-height:100vh}';
+        html+='.nav{position:sticky;top:0;z-index:10;background:#0f0f20;border-bottom:1px solid #222;padding:12px 16px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px}';
+        html+='.nav h1{font-size:16px;font-weight:700}.nb{background:#1a1a30;border:1px solid #333;border-radius:4px;color:#aaa;padding:6px 12px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit}';
+        html+='.nb:active{background:#252540}.sc{background:#111125;border:1px solid #222240;border-radius:8px;padding:14px;margin-bottom:10px}';
+        html+='.sr{display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid #1a1a30;font-size:13px}.sr:last-child{border-bottom:none}';
+        html+='.sl{color:#888}.sv{font-weight:700;font-family:monospace;font-size:14px}';
+        html+='table{width:100%}td{padding:3px 0}</style></head><body>';
+
+        html+='<div class="nav"><h1>🪟 Window Survey Report</h1><div style="display:flex;gap:6px;flex-wrap:wrap">';
+        html+='<button class="nb" onclick="document.getElementById(\'sec-sum\').scrollIntoView({behavior:\'smooth\'})">Summary</button>';
+        html+='<button class="nb" onclick="document.getElementById(\'sec-floors\').scrollIntoView({behavior:\'smooth\'})">Floors</button>';
+        html+='<button class="nb" onclick="doCSV()" style="background:#0a2a15;color:#22c55e;border-color:#22c55e33">⬇ CSV</button>';
+        html+='</div></div>';
+
+        // Summary
+        html+='<div id="sec-sum" style="padding:14px">';
+        html+='<h2 style="font-size:18px;margin-bottom:4px">📊 Costing Summary</h2>';
+        html+='<p style="font-size:12px;color:#888;margin-bottom:14px">Generated: '+new Date().toLocaleDateString()+'</p>';
+
+        html+='<div class="sc"><h3 style="font-size:13px;font-weight:700;margin-bottom:8px">📋 Progress</h3>';
+        html+='<div class="sr"><span class="sl">Total bays</span><span class="sv">'+TOTAL+'</span></div>';
+        html+='<div class="sr"><span class="sl">Surveyed</span><span class="sv" style="color:#3b82f6">'+sm.surveyed+'</span></div>';
+        html+='<div class="sr"><span class="sl">Completed</span><span class="sv" style="color:#22c55e">'+sm.completed+'</span></div></div>';
+
+        html+='<div class="sc"><h3 style="font-size:13px;font-weight:700;margin-bottom:8px">⚡ Prelim Works</h3>';
+        html+='<div class="sr"><span class="sl">Blinds to remove</span><span class="sv" style="color:#eab308">'+sm.blindsYes+'</span></div>';
+        html+='<div class="sr"><span class="sl">Total desks to move</span><span class="sv" style="color:#eab308">'+sm.totalDesks+'</span></div>';
+        html+='<div class="sr"><span class="sl">Furniture obstructions</span><span class="sv" style="color:#eab308">'+sm.furnitureYes+'</span></div>';
+        html+='<div class="sr"><span class="sl">Cable routing to reroute</span><span class="sv" style="color:#eab308">'+sm.cableYes+'</span></div>';
+        html+='<div class="sr"><span class="sl">Radiators to remove/refit</span><span class="sv" style="color:#eab308">'+sm.radYes+'</span></div>';
+        html+='<div class="sr"><span class="sl">Pipework present</span><span class="sv" style="color:#eab308">'+sm.pipeYes+'</span></div>';
+        html+='<div class="sr"><span class="sl">Bulkheads to remove/replace</span><span class="sv" style="color:#eab308">'+sm.bulkRemoval+'</span></div></div>';
+
+        html+='<div class="sc"><h3 style="font-size:13px;font-weight:700;margin-bottom:8px">⚠️ Issues</h3>';
+        html+='<div class="sr"><span class="sl">Original blockwork (no insulation)</span><span class="sv" style="color:#ef4444">'+sm.wallNoIns+'</span></div>';
+        html+='<div class="sr"><span class="sl">Fabric in poor condition</span><span class="sv" style="color:#ef4444">'+sm.fabricBad+'</span></div></div>';
+        html+='</div>';
+
+        // Floors
+        html+='<div id="sec-floors" style="padding:14px"><h2 style="font-size:18px;margin-bottom:14px">Floor Details</h2>'+floorHTML+'</div>';
+
+        // CSV script
+        html+='<script>var csvData="'+csvEncoded+'";function doCSV(){var csv=decodeURIComponent(csvData);var blob=new Blob([csv],{type:"text/csv"});var url=URL.createObjectURL(blob);var a=document.createElement("a");a.href=url;a.download="window-survey.csv";a.click();URL.revokeObjectURL(url)}<\/script>';
+        html+='</body></html>';
+
+        document.getElementById("export-prog-text").textContent="Done! Downloading...";
+        document.getElementById("export-prog-bar").style.width="100%";
+
+        var blob=new Blob([html],{type:"text/html"});
+        var url=URL.createObjectURL(blob);
+        var a=document.createElement("a");a.href=url;a.download="window-survey-report.html";a.click();
+        URL.revokeObjectURL(url);
+        setTimeout(function(){prog.style.display="none"},3000);
+      },100);
+    },100);
+  },100);
+}
+
+function doCSV(){
+  var heads=["Reference","Floor","Bay","Status","Blinds","Blinds Type","Desk","Desk Qty","Furniture","Furniture Notes","Wall Below","Wall Comments","Window Type","Cable Routing","Cable Notes","Radiator","Radiator Type","Pipework","Pipework Notes","Bulkhead","Bulkhead Removal","Ceiling Comments","Fabric OK","Fabric Notes","Notes","Surveyed By","Date"];
+  var rows=[],yn2=function(v){return v===true?"Yes":v===false?"No":""};
+  for(var f=1;f<=FLOORS;f++)for(var b=1;b<=BAYS;b++){var d=load(f,b);if(!d)continue;
+    rows.push(["F"+f+"-B"+(b<10?"0":"")+b,f,b,d.status,yn2(d.blinds),d.blindsType,yn2(d.desk),d.deskQty,yn2(d.furniture),d.furnitureNotes,d.wallBelow,d.wallComments,d.windowType,yn2(d.cableRouting),d.cableNotes,yn2(d.radiator),d.radiatorType,yn2(d.pipework),d.pipeworkNotes,yn2(d.bulkhead),yn2(d.bulkheadRemoval),d.ceilingComments,yn2(d.fabricCondition),d.fabricNotes,d.notes,d.surveyedBy,d.surveyDate])}
+  var esc=function(v){return '"'+String(v||"").replace(/"/g,'""')+'"'};
+  var csv=heads.map(esc).join(",")+"\n"+rows.map(function(r){return r.map(esc).join(",")}).join("\n");
+  showResult(csv,"window-survey.csv","text/csv");
+}
+
+function showResult(content,filename,type){
+  var el=document.getElementById("export-out");
+  el.innerHTML='<button class="dlbtn" id="dl-btn">⬇ Download '+filename+'</button><button class="cpbtn" id="cp-btn">📋 Copy</button><pre class="out">'+content.substring(0,3000)+(content.length>3000?"\n...":"")+'</pre>';
+  document.getElementById("dl-btn").onclick=function(){var blob=new Blob([content],{type:type});var url=URL.createObjectURL(blob);var a=document.createElement("a");a.href=url;a.download=filename;a.click();URL.revokeObjectURL(url)};
+  document.getElementById("cp-btn").onclick=function(){navigator.clipboard.writeText(content);this.textContent="✓ Copied!";var self=this;setTimeout(function(){self.textContent="📋 Copy"},2000)};
+}
+
+showDashboard();
+</script>
+</body>
+</html>
